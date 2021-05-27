@@ -1,7 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
 import * as CANNON from 'https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js'
-
-let camera, scene, renderer, messh, goal, keys, follow;
+import { GLTFLoader } from 'https://threejsfundamentals.org/threejs/resources/threejs/r127/examples/jsm/loaders/GLTFLoader.js';
+let camera, scene, renderer, messh, car, goal, keys, follow;
 
 let temp = new THREE.Vector3;
 let dir = new THREE.Vector3;
@@ -14,79 +14,112 @@ let speed = 0.0;
 init();
 animate();
 
-function createWheels() {
-    const geometry = new THREE.BoxBufferGeometry(1.2, 1.2, 3.3);
+/* function createWheels() {
+    const geometry = new THREE.BoxBufferGeometry(2, .2, .3);
     const material = new THREE.MeshLambertMaterial({ color: 0x333333 });
     const wheel = new THREE.Mesh(geometry, material);
     return wheel;
+}
+
+function getCarFrontTexture() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 14;
+    canvas.height = 32;
+    const context = canvas.getContext("2d");
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, 64, 32);
+
+    context.fillStyle = "#666666";
+    context.fillRect(8, 8, 48, 24);
+
+    return new THREE.CanvasTexture(canvas);
+}
+
+function getCarSideTexture() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 32;
+    const context = canvas.getContext("2d");
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, 128, 32);
+
+    context.fillStyle = "#666666";
+    context.fillRect(10, 8, 38, 24);
+    context.fillRect(58, 8, 60, 24);
+
+    return new THREE.CanvasTexture(canvas);
 }
 
 function createCar() {
     const car = new THREE.Group();
 
     const backWheel = createWheels();
-    backWheel.position.y = 1;
+    backWheel.position.y = 6;
     backWheel.position.x = -18;
     car.add(backWheel);
 
     const frontWheel = createWheels();
-    frontWheel.position.y = 6;
-    frontWheel.position.x = 18;
+    frontWheel.position.y = 0;
+    frontWheel.position.x = 0;
     car.add(frontWheel);
 
     const main = new THREE.Mesh(
-        new THREE.BoxBufferGeometry(1, 1, 1),
-        new THREE.MeshLambertMaterial({ color: 0x78b14b })
+        new THREE.BoxBufferGeometry(2, 1, 1),
+        new THREE.MeshLambertMaterial({ color: 0xa52523 })
     );
-    main.position.y = 12;
+    main.position.y = 0.5;
     car.add(main);
 
-    const cabin = new THREE.Mesh(
-        new THREE.BoxBufferGeometry(1, 1, 1),
-        new THREE.MeshLambertMaterial({ color: 0xffffff })
-    );
+    const carFrontTexture = getCarFrontTexture();
+
+    const carBackTexture = getCarFrontTexture();
+
+    const carRightSideTexture = getCarSideTexture();
+
+    const carLeftSideTexture = getCarSideTexture();
+    carLeftSideTexture.center = new THREE.Vector2(0.5, 0.5);
+    carLeftSideTexture.rotation = Math.PI;
+    carLeftSideTexture.flipY = false;
+
+    const cabin = new THREE.Mesh(new THREE.BoxBufferGeometry(33, 12, 24), [
+        new THREE.MeshLambertMaterial({ map: carFrontTexture }),
+        new THREE.MeshLambertMaterial({ map: carBackTexture }),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), // top
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), // bottom
+        new THREE.MeshLambertMaterial({ map: carRightSideTexture }),
+        new THREE.MeshLambertMaterial({ map: carLeftSideTexture }),
+    ]);
     cabin.position.x = -6;
-    cabin.position.y = 0;
+    cabin.position.y = 25.5;
     car.add(cabin);
 
-    return car;
-}
-
-/* function initPhysics() {
-    world = new CANNON.World()
-
-    dt = 1.0 / 60.0
-    damping = 0.01;
-
-    world.broadPhase = new CANNON.NaiveBroadplane
-} */
+    return car; 
+}*/
 
 
 function init() {
-    /* const fov = 75;
-    const aspect = 1920 / 1080;
-    const near = 1.0;
-    const far = 1000.0; */
-
-
-
 
     camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.01, 10);
-    camera.position.set(- .05, -.1, 0);
+    camera.position.set(- .05, .2, -.5);
 
     scene = new THREE.Scene();
     camera.lookAt(scene.position);
 
-    var geometry = new THREE.BoxBufferGeometry(0.2, 0.2, 0.2);
+    var geometry = new THREE.BoxBufferGeometry(.5, 0.2, 1);
     var material = new THREE.MeshNormalMaterial();
-
     messh = new THREE.Mesh(geometry, material);
+
+
 
     goal = new THREE.Object3D;
     follow = new THREE.Object3D;
 
     follow.position.z = -coronaSafetyDistance;
-    messh.add(follow);
+    if (car) {
+        car.add(follow);
+    }
 
     const geometryPlane = new THREE.PlaneGeometry(100, 100, 10);
     const materialPlane = new THREE.MeshBasicMaterial({ color: 0x333333, side: THREE.DoubleSide });
@@ -98,8 +131,9 @@ function init() {
     goal.add(camera);
     scene.add(messh);
 
-    const car = createCar();
-    scene.add(car);
+
+
+
 
     var gridHelper = new THREE.GridHelper(100, 100);
     gridHelper.position.set(0, -.2, 0)
