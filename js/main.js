@@ -679,7 +679,7 @@ class CannonHelper {
     }
 }
 
-
+document.getElementById('startBtn').addEventListener('click', start);
 
 document.addEventListener('keypress', function (e) {
     if (e.code === 'Space' && Game) {
