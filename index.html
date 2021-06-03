@@ -2,13 +2,28 @@
 <html>
 
 <head>
-    <title>Adobe game</title>
+    <title>Drive to survive</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./style/style.css" type="text/css" />
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="./style/style.css">
 </head>
 
 <body>
-    <script src="./main.js" type="module"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r124/three.min.js"></script>
+    <script src="https://cdn.rawgit.com/schteppe/cannon.js/master/build/cannon.js"></script>
+    <div class='instructions'>
+        <h1>Hello Yall</h1>
+        <p>A Strange man challenges you to collect all the cold coins and he says that if you do it under *insert
+            timelimit*, you can keep them.</p>
+        <p>You controll the car by using the joystick at the bottom. If you land upside down or fall of the map, press
+            enter to restart.</p>
+        <p>Press the SPACEBAR to start</p>
+        <canvas></canvas>
+    </div>
+
+    <div class='stats'></div>
+    <script src="./js/main.js"></script>
+
 </body>
 
 </html>
