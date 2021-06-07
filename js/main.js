@@ -1,3 +1,11 @@
+let slopee = 0;
+let numberOfCoin = 3;
+let level = 1;
+let walls = 10;
+let runNextLevel = true;
+
+
+
 class Game {
     constructor() {
         this.container;
@@ -13,7 +21,6 @@ class Game {
         this.container.style.height = '100%';
         document.body.appendChild(this.container);
 
-        /* const game = this; */
 
         this.js = { forward: 0, turn: 0 };
         this.clock = new THREE.Clock();
@@ -23,7 +30,6 @@ class Game {
         window.onError = function (error) {
             console.error(JSON.stringify(error));
         }
-
     }
 
 
@@ -31,10 +37,7 @@ class Game {
     init() {
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
         this.camera.position.set(0, 6, -15);
-
         this.scene = new THREE.Scene();
-
-
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -43,6 +46,8 @@ class Game {
 
         this.helper = new CannonHelper(this.scene);
         this.helper.addLights(this.renderer);
+        this.helper.addSkyBox(this.renderer);
+
 
         /* window.addEventListener('resize', function () { game.onWindowResize(); }, false); */
 
@@ -54,13 +59,43 @@ class Game {
         this.initPhysics();
         this.skyBox();
 
+        let materialArray = [];
+        let texture_ft = new THREE.TextureLoader().load('../assets/nightsky_ft.png');
+        let texture_bk = new THREE.TextureLoader().load('../assets/nightsky_bk.png');
+        let texture_up = new THREE.TextureLoader().load('../assets/nightsky_up.png');
+        let texture_dn = new THREE.TextureLoader().load('../assets/nightsky_dn.png');
+        let texture_rt = new THREE.TextureLoader().load('../assets/nightsky_rt.png');
+        let texture_lf = new THREE.TextureLoader().load('../assets/nightsky_ft.png');
+
+        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_ft }));
+        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_bk }));
+        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_up }));
+        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_dn }));
+        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_rt }));
+        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_lf }));
+
+        for (let i = 0; i < 6; i++)
+            materialArray[i].side = THREE.BackSide;
+
+        let skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
+        let skybox = new THREE.Mesh(skyboxGeo, materialArray);
+        this.scene.add(skybox);
+
+    }
+
+    skyBox() {
+
     }
 
     initPhysics() {
+
+
+
         this.physics = {};
 
         const game = this;
         const world = new CANNON.World();
+
         this.world = world;
 
         world.broadphase = new CANNON.SAPBroadphase(world);
@@ -98,12 +133,6 @@ class Game {
         this.helper.shadowTarget = chassisBody.threemesh;
 
 
-
-
-
-
-
-
         const vehicle = new CANNON.RaycastVehicle({
             chassisBody: chassisBody,
             indexRightAxis: 0,
@@ -137,6 +166,9 @@ class Game {
             return number;
         }
 
+
+        const coinBodies = [];
+
         const addCoin = () => {
             let x = randomPosition();
             let y = randomPosition();
@@ -145,17 +177,44 @@ class Game {
             const coinBody = new CANNON.Body({ mass: 0 });
             const coinShape = new CANNON.Cylinder(radius, radius, radius / 2, 30);
             coinBody.addShape(coinShape);
-            coinBody.position.set(x, -3, y);
+            coinBody.position.set(x, -2, y);
             coinBody.angularVelocity.set(0, 0, 0);
-            fixedRotation: true
             world.add(coinBody)
+            coinBodies.push(coinBody);
             this.helper.addVisual(coinBody, 'coin');
-
         }
 
-        const numberCoin = 10;
-        for (var i = 0; i < numberCoin; i++) { addCoin() }
-        /* addCoin(); */
+
+        for (var i = 0; i < numberOfCoin; i++) { addCoin() }
+
+
+        const removeCoin = () => {
+            var coinsLeft = coinBodies.filter(function (el) {
+                return el.world !== null;
+            });
+            var filtered = coinBodies.filter(function (el) {
+                return el.world === null;
+            });
+
+            const counter = document.querySelector('.money');
+            let number = filtered.length;
+            let score = coinsLeft.length;
+            counter.innerHTML = score + ' left';
+            if (number === numberOfCoin && runNextLevel === true) {
+                newLevel();
+                runNextLevel = false;
+
+
+            }
+        }
+
+        for (var i = 0; i < coinBodies.length; i++) {
+            coinBodies[i].addEventListener("collide", function (e) {
+                world.remove(e.target)
+                e.target.threemesh.visible = false
+                removeCoin()
+            });
+        }
 
         const axlewidth = 1;
         options.chassisConnectionPointLocal.set(axlewidth, 0, -1);
@@ -196,16 +255,13 @@ class Game {
 
         this.vehicle = vehicle;
 
-        // Coins
-
-        let coins = [];
 
         // World
         let matrix = [];
         let sizeX = 64,
             sizeY = 64,
-            slope = 0,
-            steep = 0;
+            slope = slopee,
+            steep = 1;
 
         for (let i = 0; i < sizeX; i++) {
             matrix.push([]);
@@ -213,7 +269,7 @@ class Game {
                 var height = Math.cos(i / sizeX * Math.PI * slope) * Math.sin(j / sizeY * Math.PI * slope) * steep + steep;
                 //the outer 4 edges of the plane
                 if (i === 0 || i === sizeX - 1 || j === 0 || j === sizeY - 1)
-                    height = 0;
+                    height = walls;
                 matrix[i].push(height);
             }
         }
@@ -278,13 +334,9 @@ class Game {
         }
     }
 
-    checkCollision() {
-        console.log(this.vehicle.chassisBody.position)
-        /* this.vehicle.addEventListener("collide", function (e) { console.log('collided') }) */
-    }
-
 
     animate() {
+
         const game = this;
 
         requestAnimationFrame(function () { game.animate(); });
@@ -300,8 +352,9 @@ class Game {
 
         this.updateDrive();
         this.updateCamera();
-        /* this.checkCollision(); */
-        // window.addEventListener('resize', this.onWindowResize()); Add this to create responsive canvas
+
+
+        // window.addEventListener('resize', this.onWindowResize()); // Add this to create responsive canvas
 
         this.renderer.render(this.scene, this.camera);
 
@@ -408,9 +461,24 @@ class CannonHelper {
         this.scene = scene;
     }
 
+
+    addSkyBox(renderer) {
+        const loader = new THREE.TextureLoader();
+        const texture = loader.load(
+            'assets/skyline.jpg',
+            () => {
+                const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+                rt.fromEquirectangularTexture(renderer, texture);
+                this.scene.background = rt.texture;
+            });
+    }
+
+
     addLights(renderer) {
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+
 
 
         const ambient = new THREE.AmbientLight(0x333333);
@@ -477,11 +545,10 @@ class CannonHelper {
     }
 
     addVisual(body, name, castShadow = true, receiveShadow = true) {
-
         body.name = name;
         if (name === "wheel") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0x000, wireframe: false });
         if (name === "car") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0Xffff, wireframe: false });
-        if (name === "landscape") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0x969389, wireframe: false });
+        if (name === "landscape") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0X333333, opacity: 0.8, transparent: true, wireframe: false });
         if (name === "coin") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0Xf8ff2e, emissive: 0X000, wireframe: false });
         if (this.settings === undefined) {
             this.settings = {
@@ -673,34 +740,89 @@ class CannonHelper {
             if (body.threemesh != undefined) {
                 body.threemesh.position.copy(body.position);
                 body.threemesh.quaternion.copy(body.quaternion);
-
             }
         });
     }
 }
 
 document.getElementById('startBtn').addEventListener('click', start);
+document.getElementById('startNextLevel').addEventListener('click', start);
+document.getElementById('restart').addEventListener('click', restart);
 
 document.addEventListener('keypress', function (e) {
-    if (e.code === 'Space' && Game) {
-        start();
-    }
     if (e.key === 'Enter') {
         restart();
     }
 });
 
 function start() {
-    const instructions = document.querySelector('.instructions');
-    instructions.remove();
+    const counter = document.querySelector('.money');
+    counter.innerHTML = numberOfCoin + ' left'
+    runNextLevel = true;
+    document.querySelector('.betweenLevels').style.display = 'none';
+    document.querySelector('.introduction').style.display = 'none';
+    document.querySelector('.stats').style.display = 'block'
+    document.querySelector('.instructions').style.display = 'flex'
     const game = new Game();
 }
 
+
+
+
+
 function restart() {
-    console.log('restart')
+
+    const counter = document.querySelector('.money');
+    counter.innerHTML = '';
     const el = document.getElementById('scene');
     const joyStick = document.getElementById('joyStick');
     el.remove();
     joyStick.remove();
     const game = new Game();
+}
+
+function endGame() {
+    const counter = document.querySelector('.money');
+    counter.innerHTML = '18';
+    const el = document.getElementById('scene');
+    const joyStick = document.getElementById('joyStick');
+
+    el.remove();
+    joyStick.remove();
+    document.querySelector('.endGame').style.display = 'flex';
+    document.querySelector('.instructions').style.display = 'none'
+}
+function betweenLevels(level) {
+    const el = document.getElementById('scene');
+    const joyStick = document.getElementById('joyStick');
+    el.remove();
+    joyStick.remove();
+    document.querySelector('.instructions').style.display = 'none'
+    document.querySelector('.betweenLevels').style.display = 'flex';
+    document.getElementById('completedLevel').innerHTML = ' You Completed level ' + level
+    document.getElementById('startNextLevel').innerHTML = 'Click here to start level ' + (level + 1)
+}
+
+function newLevel() {
+    if (level === 3) {
+        endGame();
+    }
+    if (level === 2) {
+        slopee = 10;
+        numberOfCoin = 10;
+        walls = 0;
+        level += 1
+
+        betweenLevels(2);
+
+    }
+    if (level === 1) {
+        slopee = 2;
+        numberOfCoin = 5;
+        walls = 2;
+        level += 1
+
+        betweenLevels(1);
+
+    }
 }
