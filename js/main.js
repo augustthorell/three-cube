@@ -3,8 +3,7 @@ let numberOfCoin = 3;
 let level = 1;
 let walls = 10;
 let runNextLevel = true;
-
-
+let wireFrame = false;
 
 class Game {
     constructor() {
@@ -548,7 +547,7 @@ class CannonHelper {
         body.name = name;
         if (name === "wheel") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0x000, wireframe: false });
         if (name === "car") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0Xffff, wireframe: false });
-        if (name === "landscape") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0X333333, opacity: 0.8, transparent: true, wireframe: false });
+        if (name === "landscape") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0X333333, opacity: 0.8, transparent: true, wireframe: wireFrame });
         if (name === "coin") this.currentMaterial = new THREE.MeshLambertMaterial({ color: 0Xf8ff2e, emissive: 0X000, wireframe: false });
         if (this.settings === undefined) {
             this.settings = {
@@ -812,15 +811,16 @@ function newLevel() {
         numberOfCoin = 10;
         walls = 0;
         level += 1
-
+        wireFrame = false;
         betweenLevels(2);
 
     }
     if (level === 1) {
         slopee = 2;
         numberOfCoin = 5;
-        walls = 2;
+        walls = 0;
         level += 1
+        wireFrame = true;
 
         betweenLevels(1);
 
