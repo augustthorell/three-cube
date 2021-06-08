@@ -12,25 +12,36 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r124/three.min.js"></script>
     <script src="https://cdn.rawgit.com/schteppe/cannon.js/master/build/cannon.js"></script>
+
     <div class='introduction startGame'>
-        <h1>Hello Y'all</h1>
-        <p>A Strange man challenges you to collect all the cold coins, you can keep them.</p>
-        <p>You controll the car by using the joystick at the bottom. If you land upside down or fall of the map, press
+        <h1>Adobe world</h1>
+        <p class='initialStory'>As the school is about to end, an adobe subscription is a matter of urgency. Instead of
+            selling our kidneys
+            for these costly digital things, and learning the sacred secrets of the internet. We set forth on a rapidly
+            growing journey.
+        </p>
+        <p class='gameStory'>After driving endlessly you notice a man on the side of the road with a large bag of gold.
+            You stop the car
+            and he challenges you to collect as many of them as possible and promises you a reward if you finish his
+            three challenges. </p>
+        <p class='gameInstructions'>You controll the car by using the joystick at the bottom. If you land upside down or
+            fall of the map, press
             enter to restart.</p>
         <button id="startBtn">Start Game</button>
         <canvas></canvas>
     </div>
 
-
     <div class='stats'>
         <div class="wrapper">
             <div class='coin'>
-                <img src='./assets/dollar.svg' alt='coin with dollar sign on it' />
+                <img src='./assets/krone.svg' alt='coin with dollar sign on it' />
             </div>
             <div class='money'></div>
+            <div class='totalMoney'></div>
         </div>
+        <div class='ref'>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a
+                href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
     </div>
-
 
     <div class='instructions'>
         <p>You steer with the JoyStick and if you fall over of fall from the map. Press Enter or the button below to
@@ -38,28 +49,26 @@
         <button id="restart">Restart</button>
     </div>
 
-    <div class='introduction endGame'>
-        <h2>You've completed the challenge and you're rewarded with 18 gold coins</h2>
-        <p>You think to yourself that soon I can finally afford the Adobe programs and continue your hunt for more money
-        </p>
-        <button class='endGameBtn' onclick="nextWorld()">Move on to the next challenge</button>
-    </div>
-
     <div class='introduction betweenLevels'>
         <h2 id="completedLevel"></h2>
         <button id="startNextLevel"></button>
     </div>
 
+    <div class='introduction endGame'>
+        <h2>You've completed the challenges!</h2>
+        <p>The man is impressed with how you completed the challenges and gives you 2500kr for the collected coins. You
+            move on with your journey towards running Photoshop on your Mac.
+        </p>
+        <button class='endGameBtn' onclick="nextWorld()">Continue your journey</button>
+    </div>
+
     <script>
         function nextWorld() {
-            window.location.href = "http://google.com";
+            window.location.href = "https://escape-from-hi.herokuapp.com/";
         }
     </script>
 
     <script src="./js/main.js"></script>
-
-
-
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 let slopee = 0;
-let numberOfCoin = 3;
+let numberOfCoin = 1;
 let level = 1;
 let walls = 10;
 let runNextLevel = true;
@@ -42,102 +42,51 @@ class Game {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.container.appendChild(this.renderer.domElement);
-
         this.helper = new CannonHelper(this.scene);
         this.helper.addLights(this.renderer);
         this.helper.addSkyBox(this.renderer);
-
-
-        /* window.addEventListener('resize', function () { game.onWindowResize(); }, false); */
-
         this.joystick = new JoyStick({
             game: this,
             onMove: this.joystickCallback
         });
-
         this.initPhysics();
-        this.skyBox();
-
-        let materialArray = [];
-        let texture_ft = new THREE.TextureLoader().load('../assets/nightsky_ft.png');
-        let texture_bk = new THREE.TextureLoader().load('../assets/nightsky_bk.png');
-        let texture_up = new THREE.TextureLoader().load('../assets/nightsky_up.png');
-        let texture_dn = new THREE.TextureLoader().load('../assets/nightsky_dn.png');
-        let texture_rt = new THREE.TextureLoader().load('../assets/nightsky_rt.png');
-        let texture_lf = new THREE.TextureLoader().load('../assets/nightsky_ft.png');
-
-        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_ft }));
-        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_bk }));
-        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_up }));
-        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_dn }));
-        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_rt }));
-        materialArray.push(new THREE.MeshBasicMaterial({ map: texture_lf }));
-
-        for (let i = 0; i < 6; i++)
-            materialArray[i].side = THREE.BackSide;
-
-        let skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
-        let skybox = new THREE.Mesh(skyboxGeo, materialArray);
-        this.scene.add(skybox);
-
-    }
-
-    skyBox() {
-
     }
 
     initPhysics() {
-
-
-
         this.physics = {};
-
         const game = this;
         const world = new CANNON.World();
-
         this.world = world;
-
         world.broadphase = new CANNON.SAPBroadphase(world);
         world.gravity.set(0, -10, 0);
         world.defaultContactMaterial.friction = 0;
-
         const groundMaterial = new CANNON.Material("groundMaterial");
         const wheelMaterial = new CANNON.Material("wheelMaterial");
         const wheelGroundContactMaterial = new CANNON.ContactMaterial(wheelMaterial, groundMaterial, {
             friction: 0.3,
             restitution: 0,
             contactEquationStiffness: 1000,
-
         });
 
         world.addContactMaterial(wheelGroundContactMaterial);
-
-
-
         const chassisBody = new CANNON.Body({ mass: 350 });
         const chassisShape = new CANNON.Box(new CANNON.Vec3(1, 0.3, 2));
         const chassisShapeTop = new CANNON.Box(new CANNON.Vec3(.9, 0.5, 1));
-
         chassisBody.addShape(chassisShape, new CANNON.Vec3(0, 0, 0), new CANNON.Quaternion());
         chassisBody.addShape(chassisShapeTop, new CANNON.Vec3(0, .5, 0), new CANNON.Quaternion());
-
         chassisBody.position.set(0, 0, 0);
         chassisBody.angularVelocity.set(0, 0, 0);
-
         this.helper.addVisual(chassisBody, 'car');
         this.followCam = new THREE.Object3D();
         this.followCam.position.copy(this.camera.position);
         this.scene.add(this.followCam);
         this.followCam.parent = chassisBody.threemesh;
         this.helper.shadowTarget = chassisBody.threemesh;
-
-
         const vehicle = new CANNON.RaycastVehicle({
             chassisBody: chassisBody,
             indexRightAxis: 0,
             indexUpAxis: 1,
             indexForwardAxis: 1,
-
         });
 
         const options = {
@@ -155,7 +104,6 @@ class Game {
             maxSuspensionTravel: 0.15,
             customSlidingRotationalSpeed: -30,
             useCustomSlidingRotationalSpeed: false,
-
         };
 
         function randomPosition() {
@@ -165,13 +113,11 @@ class Game {
             return number;
         }
 
-
         const coinBodies = [];
 
         const addCoin = () => {
             let x = randomPosition();
             let y = randomPosition();
-
             const radius = .5;
             const coinBody = new CANNON.Body({ mass: 0 });
             const coinShape = new CANNON.Cylinder(radius, radius, radius / 2, 30);
@@ -183,10 +129,7 @@ class Game {
             this.helper.addVisual(coinBody, 'coin');
         }
 
-
         for (var i = 0; i < numberOfCoin; i++) { addCoin() }
-
-
         const removeCoin = () => {
             var coinsLeft = coinBodies.filter(function (el) {
                 return el.world !== null;
@@ -202,9 +145,8 @@ class Game {
             if (number === numberOfCoin && runNextLevel === true) {
                 newLevel();
                 runNextLevel = false;
-
-
             }
+
         }
 
         for (var i = 0; i < coinBodies.length; i++) {
@@ -253,8 +195,6 @@ class Game {
         });
 
         this.vehicle = vehicle;
-
-
         // World
         let matrix = [];
         let sizeX = 64,
@@ -282,7 +222,6 @@ class Game {
         hfBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
         world.add(hfBody);
         this.helper.addVisual(hfBody, 'landscape');
-
         this.animate();
     }
 
@@ -296,10 +235,8 @@ class Game {
         const maxSteerVal = 0.6;
         const maxForce = 1000;
         const brakeForce = 10;
-
         const force = maxForce * forward;
         const steer = maxSteerVal * turn;
-
         if (forward != 0) {
             this.vehicle.setBrake(0, 0);
             this.vehicle.setBrake(0, 1);
@@ -313,17 +250,14 @@ class Game {
             this.vehicle.setBrake(brakeForce, 2);
             this.vehicle.setBrake(brakeForce, 3);
         }
-
         this.vehicle.setSteeringValue(steer, 2);
         this.vehicle.setSteeringValue(steer, 3);
     }
-
     onWindowResize() {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
-
     updateCamera() {
         this.camera.position.lerp(this.followCam.getWorldPosition(new THREE.Vector3()), 0.05);
         this.camera.lookAt(this.vehicle.chassisBody.threemesh.position);
@@ -333,37 +267,23 @@ class Game {
         }
     }
 
-
     animate() {
-
         const game = this;
-
         requestAnimationFrame(function () { game.animate(); });
-
         const now = Date.now();
         if (this.lastTime === undefined) this.lastTime = now;
         const dt = (Date.now() - this.lastTime) / 1000.0;
         this.FPSFactor = dt;
         this.lastTime = now;
-
         this.world.step(this.fixedTimeStep, dt);
         this.helper.updateBodies(this.world);
-
         this.updateDrive();
         this.updateCamera();
-
-
-        // window.addEventListener('resize', this.onWindowResize()); // Add this to create responsive canvas
-
+        // window.addEventListener('resize', this.onWindowResize());
         this.renderer.render(this.scene, this.camera);
-
         if (this.stats != undefined) this.stats.update();
-
     }
 }
-
-
-
 
 class JoyStick {
     constructor(options) {
@@ -392,8 +312,6 @@ class JoyStick {
         }
     }
 
-
-
     getMousePosition(evt) {
         let clientX = evt.targetTouches ? evt.targetTouches[0].pageX : evt.clientX;
         let clientY = evt.targetTouches ? evt.targetTouches[0].pageY : evt.clientY;
@@ -416,14 +334,10 @@ class JoyStick {
     move(evt) {
         evt = evt || window.event;
         const mouse = this.getMousePosition(evt);
-
         let left = mouse.x - this.offset.x;
         let top = mouse.y - this.offset.y;
-
-
         const sqMag = left * left + top * top;
         if (sqMag > this.maxRadiusSquared) {
-
             const magnitude = Math.sqrt(sqMag);
             left /= magnitude;
             top /= magnitude;
@@ -432,13 +346,10 @@ class JoyStick {
         }
         this.domElement.style.top = `${top + this.domElement.clientHeight / 2}px`;
         this.domElement.style.left = `${left + this.domElement.clientWidth / 2}px`;
-
         const forward = -(top - this.origin.top + this.domElement.clientHeight / 2) / this.maxRadius;
         const turn = (left - this.origin.left + this.domElement.clientWidth / 2) / this.maxRadius;
-
         if (this.onMove != undefined) this.onMove.call(this.game, forward, turn);
     }
-
     up(evt) {
         if ('ontouchstart' in window) {
             document.ontouchmove = null;
@@ -449,18 +360,14 @@ class JoyStick {
         }
         this.domElement.style.top = `${this.origin.top}px`;
         this.domElement.style.left = `${this.origin.left}px`;
-
         this.onMove.call(this.game, 0, 0);
     }
-
 }
 
 class CannonHelper {
     constructor(scene) {
         this.scene = scene;
     }
-
-
     addSkyBox(renderer) {
         const loader = new THREE.TextureLoader();
         const texture = loader.load(
@@ -472,35 +379,27 @@ class CannonHelper {
             });
     }
 
-
     addLights(renderer) {
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-
-
-
         const ambient = new THREE.AmbientLight(0x333333);
         this.scene.add(ambient);
 
-        /* const light = new THREE.PointLight(0xdddddd, 1, 100);
-        light.position.set(3, 10, 4); */
-
-        const light = new THREE.DirectionalLight(0xdddddd, 1, 100);
+        const light = new THREE.PointLight(0xdddddd, 1, 100);
         light.position.set(3, 10, 4);
-        light.target.position.set(0, 0, 0);
+
+        /* const light = new THREE.DirectionalLight(0xdddddd, 1, 100);
+        light.position.set(3, 10, 4);
+        light.target.position.set(0, 0, 0); */
 
         light.castShadow = true;
-
         const lightSize = 30;
         light.shadow.camera.near = 1;
         light.shadow.camera.far = 50;
         light.shadow.camera.left = light.shadow.camera.bottom = -lightSize;
         light.shadow.camera.right = light.shadow.camera.top = lightSize;
-
         light.shadow.mapSize.width = 1024;
         light.shadow.mapSize.height = 1024;
-
         this.sun = light;
         this.scene.add(light);
     }
@@ -511,20 +410,17 @@ class CannonHelper {
 
     createCannonTrimesh(geometry) {
         if (!geometry.isBufferGeometry) return null;
-
         const posAttr = geometry.attributes.position;
         const vertices = geometry.attributes.position.array;
         let indices = [];
         for (let i = 0; i < posAttr.count; i++) {
             indices.push(i);
         }
-
         return new CANNON.Trimesh(vertices, indices);
     }
 
     createCannonConvex(geometry) {
         if (!geometry.isBufferGeometry) return null;
-
         const posAttr = geometry.attributes.position;
         const floats = geometry.attributes.position.array;
         const vertices = [];
@@ -539,7 +435,6 @@ class CannonHelper {
                 face = [];
             }
         }
-
         return new CANNON.ConvexPolyhedron(vertices, faces);
     }
 
@@ -581,9 +476,7 @@ class CannonHelper {
 
         let mesh;
         if (body instanceof CANNON.Body) mesh = this.shape2Mesh(body, castShadow, receiveShadow);
-
         if (mesh) {
-
             body.threemesh = mesh;
             mesh.castShadow = castShadow;
             mesh.receiveShadow = receiveShadow;
@@ -594,37 +487,29 @@ class CannonHelper {
     shape2Mesh(body, castShadow, receiveShadow) {
         const obj = new THREE.Object3D();
         const material = this.currentMaterial;
-
         const game = this;
         let index = 0;
-
         body.shapes.forEach(function (shape) {
             let mesh;
             let geometry;
             let v0, v1, v2;
-
             switch (shape.type) {
-
                 case CANNON.Shape.types.SPHERE:
                     const sphere_geometry = new THREE.SphereGeometry(shape.radius, 8, 8);
                     mesh = new THREE.Mesh(sphere_geometry, material);
                     break;
-
                 case CANNON.Shape.types.PARTICLE:
                     mesh = new THREE.Mesh(game.particleGeo, game.particleMaterial);
                     const s = this.settings;
                     mesh.scale.set(s.particleSize, s.particleSize, s.particleSize);
                     break;
-
                 case CANNON.Shape.types.PLANE:
                     geometry = new THREE.PlaneGeometry(10, 10, 4, 4);
                     mesh = new THREE.Object3D();
                     const submesh = new THREE.Object3D();
-
                     const ground = new THREE.Mesh(geometry, material);
                     ground.scale.set(100, 100, 100);
                     submesh.add(ground);
-
                     mesh.add(submesh);
                     break;
 
@@ -637,14 +522,11 @@ class CannonHelper {
 
                 case CANNON.Shape.types.CONVEXPOLYHEDRON:
                     const geo = new THREE.Geometry();
-
-
                     shape.vertices.forEach(function (v) {
                         geo.vertices.push(new THREE.Vector3(v.x, v.y, v.z));
                     });
 
                     shape.faces.forEach(function (face) {
-
                         const a = face[0];
                         for (let j = 1; j < face.length - 1; j++) {
                             const b = face[j];
@@ -659,7 +541,6 @@ class CannonHelper {
 
                 case CANNON.Shape.types.HEIGHTFIELD:
                     geometry = new THREE.Geometry();
-
                     v0 = new CANNON.Vec3();
                     v1 = new CANNON.Vec3();
                     v2 = new CANNON.Vec3();
@@ -690,7 +571,6 @@ class CannonHelper {
 
                 case CANNON.Shape.types.TRIMESH:
                     geometry = new THREE.Geometry();
-
                     v0 = new CANNON.Vec3();
                     v1 = new CANNON.Vec3();
                     v2 = new CANNON.Vec3();
@@ -708,29 +588,24 @@ class CannonHelper {
                     geometry.computeFaceNormals();
                     mesh = new THREE.Mesh(geometry, MutationRecordaterial);
                     break;
-
                 default:
                     throw "Visual type not recognized: " + shape.type;
             }
 
             mesh.receiveShadow = receiveShadow;
             mesh.castShadow = castShadow;
-
             mesh.traverse(function (child) {
                 if (child.isMesh) {
                     child.castShadow = castShadow;
                     child.receiveShadow = receiveShadow;
                 }
             });
-
             var o = body.shapeOffsets[index];
             var q = body.shapeOrientations[index++];
             mesh.position.set(o.x, o.y, o.z);
             mesh.quaternion.set(q.x, q.y, q.z, q.w);
-
             obj.add(mesh);
         });
-
         return obj;
     }
 
@@ -747,13 +622,11 @@ class CannonHelper {
 document.getElementById('startBtn').addEventListener('click', start);
 document.getElementById('startNextLevel').addEventListener('click', start);
 document.getElementById('restart').addEventListener('click', restart);
-
 document.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         restart();
     }
 });
-
 function start() {
     const counter = document.querySelector('.money');
     counter.innerHTML = numberOfCoin + ' left'
@@ -764,13 +637,7 @@ function start() {
     document.querySelector('.instructions').style.display = 'flex'
     const game = new Game();
 }
-
-
-
-
-
 function restart() {
-
     const counter = document.querySelector('.money');
     counter.innerHTML = '';
     const el = document.getElementById('scene');
@@ -779,13 +646,14 @@ function restart() {
     joyStick.remove();
     const game = new Game();
 }
-
 function endGame() {
     const counter = document.querySelector('.money');
-    counter.innerHTML = '18';
+    counter.remove();
+    const totalMoney = document.querySelector('.totalMoney');
+    totalMoney.style.display = 'block';
+    totalMoney.innerHTML = '2500 kr';
     const el = document.getElementById('scene');
     const joyStick = document.getElementById('joyStick');
-
     el.remove();
     joyStick.remove();
     document.querySelector('.endGame').style.display = 'flex';
@@ -801,7 +669,6 @@ function betweenLevels(level) {
     document.getElementById('completedLevel').innerHTML = ' You Completed level ' + level
     document.getElementById('startNextLevel').innerHTML = 'Click here to start level ' + (level + 1)
 }
-
 function newLevel() {
     if (level === 3) {
         endGame();
@@ -811,18 +678,15 @@ function newLevel() {
         numberOfCoin = 10;
         walls = 0;
         level += 1
-        wireFrame = false;
+        wireFrame = true;
         betweenLevels(2);
-
     }
     if (level === 1) {
         slopee = 2;
-        numberOfCoin = 5;
+        numberOfCoin = 1;
         walls = 0;
         level += 1
-        wireFrame = true;
 
         betweenLevels(1);
-
     }
 }
