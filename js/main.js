@@ -1,5 +1,5 @@
 let slopee = 0;
-let numberOfCoin = 1;
+let numberOfCoin = 3;
 let level = 1;
 let walls = 10;
 let runNextLevel = true;
@@ -683,7 +683,7 @@ function newLevel() {
     }
     if (level === 1) {
         slopee = 2;
-        numberOfCoin = 1;
+        numberOfCoin = 5;
         walls = 0;
         level += 1
 
